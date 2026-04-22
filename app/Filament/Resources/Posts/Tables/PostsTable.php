@@ -11,6 +11,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Filters\SelectFilter;
+use Symfony\Component\Finder\Iterator\SortableIterator;
 
 class PostsTable
 {
@@ -19,30 +23,58 @@ class PostsTable
         return $table
             ->columns([
                 //
+            TextColumn::make('id')
+                ->label('ID')
+                ->Sortable()
+                ->toggleable(isToggledHiddenByDefault:true),
             TextColumn::make('title')
-                ->searchable(),
-            
+                ->sortable()
+                ->searchable()
+                ->toggleable(),
             TextColumn::make('slug')
-                ->searchable(),
-            
+                ->sortable()
+                ->searchable()
+                ->toggleable(),
             TextColumn::make('category.name')
                 ->sortable()
-                ->searchable(),
-            
+                ->searchable()
+                ->toggleable(),            
             ColorColumn::make('color'),
-            
             ImageColumn::make('image')
                 ->disk('public'),
-            
+            TextColumn::make('created_at')
+                ->label('Created At')
+                ->dateTime()
+                ->sortable(),
+            TextColumn::make('tags')
+                ->label('tags')
+                ->toggleable(isToggledHiddenByDefault:true),
             IconColumn::make('published')
                 ->boolean()
                 ->trueIcon('heroicon-o-check-circle')
                 ->falseIcon('heroicon-o-x-circle')
                 ->trueColor('success')
                 ->falseColor('danger'),
-            ])
+        
+            ])->defaultSort('created_at', 'asc')
             ->filters([
-                //
+                Filter::make('created_at')
+                    ->label('Creation Date')
+                        ->schema([
+                            DatePicker::make('created_at')
+                                ->label('Select Date: '),
+                    ]),
+                SelectFilter::make('category_id')
+                    ->label('Select Category')
+                    ->relationship('category', 'name')
+                    ->preload(),
+                    // ->query(function ($query, $data) {
+                    //     return $query
+                    //     ->when(
+                    //         $data['created_at'],
+                    //         fn ($query, $date) => $query->whereDate('created_at', $date)
+                    //         );
+                    //     })
             ])
             ->recordActions([
                 EditAction::make(),

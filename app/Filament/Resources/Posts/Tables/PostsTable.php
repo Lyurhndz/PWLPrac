@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Posts\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ReplicateAction;
 use Filament\Schemas\Components\Image;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
@@ -14,7 +16,9 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Forms\Components\Checkbox;
 use Symfony\Component\Finder\Iterator\SortableIterator;
+use Filament\Actions\Action;
 
 class PostsTable
 {
@@ -46,9 +50,9 @@ class PostsTable
                 ->label('Created At')
                 ->dateTime()
                 ->sortable(),
-            TextColumn::make('tags')
+            TextColumn::make('tags.name')
                 ->label('tags')
-                ->toggleable(isToggledHiddenByDefault:true),
+                ->toggleable(isToggledHiddenByDefault:false),
             IconColumn::make('published')
                 ->boolean()
                 ->trueIcon('heroicon-o-check-circle')
@@ -77,7 +81,19 @@ class PostsTable
                     //     })
             ])
             ->recordActions([
+                ReplicateAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
+                Action::make('status')
+                ->label('Status Change')
+                ->icon('heroicon-o-check-circle')
+                ->schema([
+                    Checkbox::make('published')
+                    ->default(fn($record): bool => $record->published)
+                ])
+                ->action(function($record, $data){
+                    $record->update(['published' => $data['published']]);
+                })
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

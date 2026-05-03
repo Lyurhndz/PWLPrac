@@ -14,6 +14,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Grid;
+use App\Models\Category;
 
 class PostForm
 {
@@ -54,6 +55,7 @@ class PostForm
                                         Select::make("category_id")
                                             ->relationship('category', 'name')
                                             ->required() // Category wajib dipilih
+                                            ->options(Category::all()->pluck("name", "id"))
                                             ->validationMessages([
                                                 'required' => 'Please select a category for this post.',
                                             ])
@@ -107,17 +109,12 @@ class PostForm
                         Section::make("Meta Information")
                             ->icon('heroicon-o-tag')
                             ->schema([
-                                TagsInput::make("tags")
-                                    ->placeholder("Add tags")
-                                    ->suggestions([
-                                        'Laravel',
-                                        'PHP',
-                                        'JavaScript',
-                                        'Tailwind',
-                                        'Livewire',
-                                        'Filament',
-                                    ]),
-                                
+                                // TagsInput::make("tags"),
+                                Select::make('tag_id')
+                                    ->relationship('tags', 'name')
+                                    ->multiple()  // Add this - it's required for many-to-many
+                                    ->preload()   // Optional: loads tags in advance
+                                    ->searchable(), // Optional: allows searching
                                 Checkbox::make("published")
                                     ->label("Published")
                                     ->default(false),
